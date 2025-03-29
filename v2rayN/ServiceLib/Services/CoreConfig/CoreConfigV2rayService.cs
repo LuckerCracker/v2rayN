@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text.Json.Nodes;
+using ServiceLib.Models;
 
 namespace ServiceLib.Services.CoreConfig
 {
@@ -57,6 +58,16 @@ namespace ServiceLib.Services.CoreConfig
                 await GenRouting(v2rayConfig);
 
                 await GenOutbound(node, v2rayConfig.outbounds.First());
+
+                foreach (var profileItem in SQLiteHelper.Instance.TableAsync<ProfileItem>().ToListAsync().Result)
+                {
+                    var outboundTag = JsonUtils.Deserialize<V2rayConfig>(EmbedUtils.GetEmbedText(Global.V2raySampleClient)).outbounds.First();
+                    outboundTag.tag = profileItem.Remarks;
+
+                    await GenOutbound(profileItem, outboundTag);
+
+                    v2rayConfig.outbounds.Insert(0, outboundTag);
+                }
 
                 await GenMoreOutbounds(node, v2rayConfig);
 

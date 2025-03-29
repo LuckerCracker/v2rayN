@@ -1,6 +1,8 @@
 using System.Reactive.Disposables;
 using System.Windows;
 using ReactiveUI;
+using ServiceLib.Common;
+using SQLite;
 
 namespace v2rayN.Views
 {
@@ -17,6 +19,12 @@ namespace v2rayN.Views
 
             ViewModel = new RoutingRuleDetailsViewModel(rulesItem, UpdateViewHandler);
             cmbOutboundTag.Items.Add(Global.ProxyTag);
+             
+            foreach (var profileItem in SQLiteHelper.Instance.TableAsync<ProfileItem>().ToListAsync().Result)
+            {
+                cmbOutboundTag.Items.Add(profileItem.Remarks);
+            }
+
             cmbOutboundTag.Items.Add(Global.DirectTag);
             cmbOutboundTag.Items.Add(Global.BlockTag);
             Global.RuleProtocols.ForEach(it =>

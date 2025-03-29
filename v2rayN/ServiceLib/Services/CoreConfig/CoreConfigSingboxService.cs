@@ -1,6 +1,7 @@
 using System.Data;
 using System.Net;
 using System.Net.NetworkInformation;
+using ServiceLib.Models;
 
 namespace ServiceLib.Services.CoreConfig
 {
@@ -54,6 +55,16 @@ namespace ServiceLib.Services.CoreConfig
                 await GenInbounds(singboxConfig);
 
                 await GenOutbound(node, singboxConfig.outbounds.First());
+
+                foreach (ProfileItem profileItem in SQLiteHelper.Instance.TableAsync<ProfileItem>().ToListAsync().Result)
+                {
+                    var outboundTag = JsonUtils.Deserialize<SingboxConfig>(EmbedUtils.GetEmbedText(Global.SingboxSampleClient)).outbounds.First();
+                    outboundTag.tag = profileItem.Remarks;
+
+                    await GenOutbound(profileItem, outboundTag);
+
+                    singboxConfig.outbounds.Insert(0, outboundTag);
+                }
 
                 await GenMoreOutbounds(node, singboxConfig);
 
